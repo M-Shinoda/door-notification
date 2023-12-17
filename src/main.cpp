@@ -12,13 +12,9 @@
 
 HTTPClient http;
 
-unsigned int counter = 0;
-unsigned long total_counter = 0;
 struct tm timeInfo; // 時刻を格納するオブジェクト
 int before_hour = 0;
 int start_day = 0;
-int open_per_hour_total = 0;
-double hour_average;
 int start_hour;
 
 unsigned long calculateDistance(unsigned long timeMicroseconds)
