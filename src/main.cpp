@@ -16,7 +16,6 @@ unsigned int counter = 0;
 unsigned long total_counter = 0;
 unsigned long diff;
 float dis;
-bool result = false;
 struct tm timeInfo; // 時刻を格納するオブジェクト
 int before_hour = 0;
 int start_day = 0;
@@ -32,6 +31,7 @@ unsigned long calculateDistance(unsigned long timeMicroseconds)
 
 bool response_echo()
 {
+  bool result = false;
   digitalWrite(TRG, HIGH);
   delayMicroseconds(HIGHTIME);
   digitalWrite(TRG, LOW);
@@ -40,13 +40,12 @@ bool response_echo()
   Serial.println(dis);
   if (dis < threshold)
   {
-    result = true;
+    return true;
   }
   else
   {
-    result = false;
+    return false;
   }
-  return result;
 }
 
 void sendSlackMessage(String webHookUrl, String text)
