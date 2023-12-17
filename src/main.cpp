@@ -17,6 +17,32 @@ int before_hour = 0;
 int start_day = 0;
 int start_hour;
 
+int movingAverages[5];
+const int bufferSize = 10;
+int buffer[bufferSize];
+int bufferIndex = 0;
+int total = 0;
+int count = 0;
+
+void addData(int value)
+{
+  total -= buffer[bufferIndex];
+  buffer[bufferIndex] = value;
+  total += value;
+  bufferIndex = (bufferIndex + 1) % bufferSize;
+  if (count < bufferSize)
+  {
+    count++;
+  }
+}
+
+int getMovingAverage()
+{
+  if (count == 0)
+    return 0;           // データがまだない場合
+  return total / count; // 移動平均を計算
+}
+
 unsigned long calculateDistance(unsigned long timeMicroseconds)
 {
   const double temp = 26.0;
@@ -28,6 +54,7 @@ float responseEcho()
   float dis;
   unsigned long diff;
 
+  delay(10);
   digitalWrite(TRG, HIGH);
   delayMicroseconds(HIGHTIME);
   digitalWrite(TRG, LOW);
@@ -35,19 +62,27 @@ float responseEcho()
   return calculateDistance((float)diff);
 }
 
+int prevMovingAverage = 0;
 bool isLargeAmountChange()
 {
+  // Serial.println("3");
   bool result = false;
-  float dis = responseEcho();
-  Serial.println(dis);
-  if (dis < threshold)
+
+  for (int j = 0; j < 10; j++)
   {
-    return true;
+    float dis = responseEcho();
+    Serial.print("dis: ");
+    Serial.println((int)dis);
+    if ((int)dis > 700)
+    {
+      dis = 700;
+    }
+    addData((int)dis);
   }
-  else
-  {
-    return false;
-  }
+  const int avg = getMovingAverage();
+  const bool isChange = abs(prevMovingAverage - avg) >= 350;
+  prevMovingAverage = avg;
+  return isChange;
 }
 
 void sendSlackMessage(String webHookUrl, String text)
@@ -74,38 +109,14 @@ void sendSlackMessage(String webHookUrl, String text)
 bool first_time = true;
 void judge(String sendText)
 {
+  // Serial.println("1");
   if (isLargeAmountChange())
   {
-    ledcWrite(1, 0);
-    const unsigned long judgeStart = millis();
-    int totalCount = 0;
-    int openJudgeCount = 0;
-    while ((millis() - judgeStart) < judge_time)
-    {
-      totalCount += 1;
-      const bool check = isLargeAmountChange();
-      Serial.println(isLargeAmountChange());
-      if (check)
-      {
-        openJudgeCount += 1;
-      }
-    }
-    Serial.println((double)openJudgeCount / totalCount);
-    Serial.println(totalCount);
-    if ((double)openJudgeCount / totalCount > 0.6)
-    {
-      getLocalTime(&timeInfo);
-      first_time = false;
-      start_hour = timeInfo.tm_hour;
-      sendSlackMessage(WEBHOOK_URL, sendText);
-      delay(10000);
-    }
+    Serial.println("2");
+    first_time = false;
+    sendSlackMessage(WEBHOOK_URL, sendText);
+    delay(10000);
   }
-  else
-  {
-    ledcWrite(1, 255);
-  }
-  delay(50);
 }
 
 void setup()
