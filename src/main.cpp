@@ -17,8 +17,7 @@ int before_hour = 0;
 int start_day = 0;
 int start_hour;
 
-int movingAverages[5];
-const int bufferSize = 10;
+const int bufferSize = 5;
 int buffer[bufferSize];
 int bufferIndex = 0;
 int total = 0;
@@ -68,19 +67,22 @@ bool isLargeAmountChange()
   // Serial.println("3");
   bool result = false;
 
-  for (int j = 0; j < 10; j++)
+  for (int j = 0; j < bufferSize; j++)
   {
     float dis = responseEcho();
     Serial.print("dis: ");
     Serial.println((int)dis);
-    if ((int)dis > 700)
+    if ((int)dis > 1200)
     {
-      dis = 700;
+      dis = 1200;
     }
     addData((int)dis);
   }
   const int avg = getMovingAverage();
-  const bool isChange = abs(prevMovingAverage - avg) >= 350;
+  bool isChange = abs(prevMovingAverage - avg) >= 150;
+  if(prevMovingAverage == 0){
+    isChange = false;
+  }
   prevMovingAverage = avg;
   return isChange;
 }
@@ -112,7 +114,7 @@ void judge(String sendText)
   // Serial.println("1");
   if (isLargeAmountChange())
   {
-    Serial.println("2");
+    prevMovingAverage = 0;
     first_time = false;
     sendSlackMessage(WEBHOOK_URL, sendText);
     delay(10000);
@@ -166,6 +168,19 @@ void setup()
     ESP.restart();
   }
   ////
+
+  //  for (int j = 0; j < 10; j++)
+  // {
+  //   float dis = responseEcho();
+  //   Serial.print("dis: ");
+  //   Serial.println((int)dis);
+  //   if ((int)dis > 1200)
+  //   {
+  //     dis = 1200;
+  //   }
+  //   addData((int)dis);
+  // }
+  // prevMovingAverage = getMovingAverage();
 
   ////　起動日初回実行
   while (first_time)
