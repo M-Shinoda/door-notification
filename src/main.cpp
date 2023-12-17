@@ -14,7 +14,6 @@ HTTPClient http;
 
 unsigned int counter = 0;
 unsigned long total_counter = 0;
-unsigned long diff;
 struct tm timeInfo; // 時刻を格納するオブジェクト
 int before_hour = 0;
 int start_day = 0;
@@ -32,6 +31,7 @@ bool response_echo()
 {
   bool result = false;
   float dis;
+  unsigned long diff;
 
   digitalWrite(TRG, HIGH);
   delayMicroseconds(HIGHTIME);
