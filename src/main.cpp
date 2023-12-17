@@ -23,9 +23,8 @@ unsigned long calculateDistance(unsigned long timeMicroseconds)
   return (timeMicroseconds / 2) * 0.3466; // 丸め誤差などにより0になってしまうため先に計算（331m/s + 0.6 * 26 * / 1000000μs * 1000mm）mm/s
 }
 
-bool response_echo()
+float responseEcho()
 {
-  bool result = false;
   float dis;
   unsigned long diff;
 
@@ -33,7 +32,13 @@ bool response_echo()
   delayMicroseconds(HIGHTIME);
   digitalWrite(TRG, LOW);
   diff = pulseIn(ECH, HIGH);
-  dis = calculateDistance((float)diff);
+  return calculateDistance((float)diff);
+}
+
+bool isLargeAmountChange()
+{
+  bool result = false;
+  float dis = responseEcho();
   Serial.println(dis);
   if (dis < threshold)
   {
@@ -69,7 +74,7 @@ void sendSlackMessage(String webHookUrl, String text)
 bool first_time = true;
 void judge(String sendText)
 {
-  if (response_echo())
+  if (isLargeAmountChange())
   {
     ledcWrite(1, 0);
     const unsigned long judgeStart = millis();
@@ -78,8 +83,8 @@ void judge(String sendText)
     while ((millis() - judgeStart) < judge_time)
     {
       totalCount += 1;
-      const bool check = response_echo();
-      Serial.println(response_echo());
+      const bool check = isLargeAmountChange();
+      Serial.println(isLargeAmountChange());
       if (check)
       {
         openJudgeCount += 1;
