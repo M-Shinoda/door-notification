@@ -15,7 +15,6 @@ HTTPClient http;
 unsigned int counter = 0;
 unsigned long total_counter = 0;
 unsigned long diff;
-float dis;
 struct tm timeInfo; // 時刻を格納するオブジェクト
 int before_hour = 0;
 int start_day = 0;
@@ -32,6 +31,8 @@ unsigned long calculateDistance(unsigned long timeMicroseconds)
 bool response_echo()
 {
   bool result = false;
+  float dis;
+
   digitalWrite(TRG, HIGH);
   delayMicroseconds(HIGHTIME);
   digitalWrite(TRG, LOW);
