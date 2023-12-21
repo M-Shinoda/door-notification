@@ -70,17 +70,18 @@ bool isLargeAmountChange()
   for (int j = 0; j < bufferSize; j++)
   {
     float dis = responseEcho();
-    Serial.print("dis: ");
-    Serial.println((int)dis);
     if ((int)dis > 1200)
     {
       dis = 1200;
     }
+    Serial.print("dis: ");
+    Serial.println((int)dis);
     addData((int)dis);
   }
   const int avg = getMovingAverage();
   bool isChange = abs(prevMovingAverage - avg) >= 150;
-  if(prevMovingAverage == 0){
+  if (prevMovingAverage == 0)
+  {
     isChange = false;
   }
   prevMovingAverage = avg;
